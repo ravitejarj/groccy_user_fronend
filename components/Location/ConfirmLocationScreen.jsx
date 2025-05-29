@@ -1,8 +1,6 @@
-import { getPlaceDetails, getPlaceSuggestions } from '@/services/GooglePlacesService';
-import { getNearbyVendors } from '@/services/NearbyVendorsService';
 import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -17,9 +15,15 @@ import {
 } from 'react-native';
 import MapView, { Circle } from 'react-native-maps';
 
+import { getAccurateCurrentLocation } from '@/helpers/GeoLocationHelper';
+import { animateToLocation } from '@/helpers/MapCameraHelper';
+import { getPlaceDetails, getPlaceSuggestions } from '@/services/GooglePlacesService';
+import { getNearbyVendors } from '@/services/NearbyVendorsService';
+
 const MapScreen = () => {
   const router = useRouter();
   const { lat, lng } = useLocalSearchParams();
+  const mapRef = useRef(null);
 
   const [region, setRegion] = useState({
     latitude: parseFloat(lat) || 37.7749,
@@ -86,18 +90,20 @@ const MapScreen = () => {
   };
 
   const goToCurrentLocation = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'Please enable location access');
-      return;
+    try {
+      const { latitude, longitude } = await getAccurateCurrentLocation();
+
+      setRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.002,
+        longitudeDelta: 0.002,
+      });
+
+      animateToLocation(mapRef, latitude, longitude);
+    } catch (err) {
+      Alert.alert('Location Error', err.message);
     }
-    const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-    setRegion({
-      latitude: loc.coords.latitude,
-      longitude: loc.coords.longitude,
-      latitudeDelta: 0.002,
-      longitudeDelta: 0.002,
-    });
   };
 
   const handleSuggestionSelect = async (placeId, description) => {
@@ -148,7 +154,12 @@ const MapScreen = () => {
         />
       )}
 
-      <MapView style={styles.map} region={region} onRegionChangeComplete={setRegion}>
+      <MapView
+        ref={mapRef}
+        style={styles.map}
+        region={region}
+        onRegionChangeComplete={setRegion}
+      >
         {vendorCircle && (
           <Circle
             center={{
