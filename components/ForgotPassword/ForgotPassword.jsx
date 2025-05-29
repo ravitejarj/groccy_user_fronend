@@ -1,18 +1,14 @@
+import AuthBackground from '@/components/Common/AuthBackground';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
+  View
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import AuthBackground from '@/components/Common/AuthBackground';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -67,7 +63,7 @@ const ForgotPassword = () => {
       </TouchableOpacity>
       <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 0 }}>
         <Text style={{ color: '#666' }}>Back to </Text>
-        <TouchableOpacity onPress={() => router.push('/login')}>
+        <TouchableOpacity onPress={() => router.push('/Login')}>
           <Text style={{ color: '#FF5722', fontWeight: 'bold' }}>Sign in</Text>
         </TouchableOpacity>
       </View>

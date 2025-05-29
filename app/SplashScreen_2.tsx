@@ -1,15 +1,15 @@
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  StatusBar,
-  Platform,
   Dimensions,
+  Image,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 
@@ -20,13 +20,13 @@ export default function SplashScreen2() {
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
       <Image
-        source={require('../assets/mobile-images/auth/Splash Screen 2.jpg')}
+        source={require('../assets/mobile_images/splash/Splash_Screen_2.jpg')}
         style={styles.image}
         resizeMode="cover"
       />
       <TouchableOpacity
         style={styles.button}
-        onPress={() => router.push('/splash-screen-3')}
+        onPress={() => router.push('/SplashScreen_3')}
         activeOpacity={0.85}
       >
         <Text style={styles.buttonText}>Get Started</Text>
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 24,
     right: 24,
-    bottom: Platform.OS === 'android' ? 40 : 48,
+    bottom: Platform.OS === 'android' ? 120 : 128,
     backgroundColor: '#FF5722',
     height: 52,
     borderRadius: 32,

@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const HomeHeader = () => {
   const router = useRouter();
@@ -11,7 +11,7 @@ const HomeHeader = () => {
   };
 
   const handleLocationPress = () => {
-    router.push('/set-location');
+    router.push('/SetLocation');
   };
 
   return (

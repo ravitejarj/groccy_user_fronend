@@ -1,13 +1,13 @@
-import React, { useEffect } from 'react';
-import { View, Image, StyleSheet, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
+import { Image, StatusBar, StyleSheet, View } from 'react-native';
 
 export default function SplashScreen() {
   const router = useRouter();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.replace('/splash-screen-2');
+      router.replace('/SplashScreen_2');
     }, 2000);
     return () => clearTimeout(timer);
   }, []);
@@ -16,7 +16,7 @@ export default function SplashScreen() {
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <Image
-        source={require('../assets/mobile-images/auth/Splash Screen 1.jpg')}
+        source={require('../assets/mobile_images/splash/Splash_Screen_1.jpg')}
         style={styles.image}
         resizeMode="cover"
       />

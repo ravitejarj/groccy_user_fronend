@@ -1,14 +1,14 @@
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   Image,
-  TouchableOpacity,
-  StatusBar,
   Platform,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 
 export default function SplashScreen3() {
   const router = useRouter();
@@ -20,17 +20,17 @@ export default function SplashScreen3() {
       <View style={styles.header}>
         <View style={styles.logoRow}>
             <Image
-            source={require('../assets/mobile-images/icons/Shopping icon with text.png')}
+            source={require('../assets/mobile_images/icons/Shopping icon with text.png')}
             style={styles.logo}
             resizeMode="contain"
             />
-            
+
         </View>
     </View>
       {/* Main Illustration */}
       <View style={styles.illustrationContainer}>
         <Image
-          source={require('../assets/mobile-images/auth/Splash Screen 3.png')}
+          source={require('../assets/mobile_images/splash/Splash_Screen_3.png')}
           style={styles.illustration}
           resizeMode="contain"
         />
@@ -38,7 +38,7 @@ export default function SplashScreen3() {
       {/* Button */}
       <TouchableOpacity
         style={styles.button}
-        onPress={() => router.push('/login')}
+        onPress={() => router.push('/Login')}
         activeOpacity={0.85}
       >
         <Text style={styles.buttonText}>Start shopping</Text>
@@ -94,13 +94,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 24,
     right: 24,
-    bottom: Platform.OS === 'android' ? 40 : 48,
+    bottom: Platform.OS === 'android' ? 120 : 128,
     backgroundColor: '#FF5722',
-    height: 48,
-    borderRadius: 24,
+    height: 52,
+    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 2,
+    elevation: 2,
   },
   buttonText: {
     color: '#FFF',

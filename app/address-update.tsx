@@ -1,2 +1,2 @@
-import AddressUpdate from '../components/Location/AddressUpdate';
-export default AddressUpdate; 
+import AddressForm from '../components/Location/AddressForm';
+export default AddressForm;
