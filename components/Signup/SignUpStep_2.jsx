@@ -37,7 +37,7 @@ const SignUpStep2 = () => {
         password,
         role: 'customer',
       });
-      router.push({ pathname: '/signup-verify', params: { phone } });
+      router.push({ pathname: '/SignupStep_3', params: { phone } });
     } catch (err) {
       setError(err?.response?.data?.message || "Signup failed.");
     }

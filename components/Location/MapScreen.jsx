@@ -1,207 +1,285 @@
-import React, { useState, useEffect } from 'react';
+import { getPlaceDetails, getPlaceSuggestions } from '@/services/maps';
+import * as Location from 'expo-location';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  SafeAreaView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  Alert,
+  View,
 } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import * as Location from 'expo-location';
-import SafeAreaWrapper from '@/components/Common/SafeAreaWrapper';
+import MapView, { Circle } from 'react-native-maps';
+import { getNearbyVendors } from './vendorsAPI';
 
 const MapScreen = () => {
   const router = useRouter();
-  const [searchText, setSearchText] = useState('');
+  const { lat, lng } = useLocalSearchParams();
+
   const [region, setRegion] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
+    latitude: parseFloat(lat) || 37.7749,
+    longitude: parseFloat(lng) || -122.4194,
+    latitudeDelta: 0.002,
+    longitudeDelta: 0.002,
   });
 
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [checking, setChecking] = useState(false);
+  const [notServiceable, setNotServiceable] = useState(false);
+  const [vendorCircle, setVendorCircle] = useState(null);
+
+  const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+
   useEffect(() => {
-    (async () => {
-      try {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permission denied', 'Location permission is required to use the map.');
-          return;
-        }
+    reverseGeocode(region.latitude, region.longitude);
+  }, [region]);
 
-        let location = await Location.getCurrentPositionAsync({});
-        setRegion({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        });
-      } catch (error) {
-        console.error('Error getting location:', error);
-        Alert.alert('Error', 'Could not get your location. Please try again.');
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const geo = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
+      const item = geo[0];
+      const formatted = `${item.name || ''}, ${item.street || ''}, ${item.city || ''}, ${item.region || ''}`;
+      setAddress(formatted);
+      setCity(item.city || '');
+    } catch {
+      setAddress('Unknown location');
+      setCity('');
+    }
+  };
+
+  const handleConfirm = async () => {
+    setChecking(true);
+    setNotServiceable(false);
+    setVendorCircle(null);
+
+    try {
+      const vendors = await getNearbyVendors(region.latitude, region.longitude);
+      if (!vendors.length) {
+        setVendorCircle(null);
+        setNotServiceable(true);
+        return;
       }
-    })();
-  }, []);
 
-  const handleConfirm = () => {
-    router.push('/address-update');
+      setVendorCircle(vendors[0]);
+
+      router.push({
+        pathname: '/address-update',
+        params: {
+          lat: region.latitude.toString(),
+          lng: region.longitude.toString(),
+          address,
+          city,
+        },
+      });
+    } catch (err) {
+      Alert.alert('Error', 'Something went wrong.');
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const goToCurrentLocation = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Please enable location access');
+      return;
+    }
+    const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+    setRegion({
+      latitude: loc.coords.latitude,
+      longitude: loc.coords.longitude,
+      latitudeDelta: 0.002,
+      longitudeDelta: 0.002,
+    });
+  };
+
+  const handleSuggestionSelect = async (placeId, description) => {
+    const loc = await getPlaceDetails(placeId);
+    if (loc) {
+      setRegion({
+        ...region,
+        latitude: loc.lat,
+        longitude: loc.lng,
+      });
+      setQuery(description);
+      setSuggestions([]);
+    }
   };
 
   return (
-    <SafeAreaWrapper style={styles.container}>
-      <View style={styles.contentContainer}>
-        <MapView
-          style={styles.map}
-          region={region}
-          onRegionChangeComplete={setRegion}
-          showsUserLocation
-          showsMyLocationButton
-        >
-          <Marker
-            coordinate={{
-              latitude: region.latitude,
-              longitude: region.longitude,
-            }}
-            pinColor="#FF5722"
-          />
-        </MapView>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.header}>Select Your Location</Text>
 
-        <View style={styles.overlay}>
-          <View style={styles.header}>
-            <TouchableOpacity 
-              style={styles.backButton}
-              onPress={() => router.back()}
-            >
-              <Ionicons name="chevron-back" size={24} color="#333" />
-            </TouchableOpacity>
-            <Text style={styles.title}></Text>
-          </View>
+      <TextInput
+        placeholder="Search for apartment, street name..."
+        style={styles.searchInput}
+        placeholderTextColor="#999"
+        value={query}
+        onChangeText={async (text) => {
+          setQuery(text);
+          if (text.length > 2) {
+            const results = await getPlaceSuggestions(text);
+            setSuggestions(results);
+          } else {
+            setSuggestions([]);
+          }
+        }}
+      />
 
-          <View style={styles.searchContainer}>
-            <View style={styles.searchInputContainer}>
-              <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search for area, street name"
-                value={searchText}
-                onChangeText={setSearchText}
-                placeholderTextColor="#999"
-              />
-              {searchText ? (
-                <TouchableOpacity 
-                  onPress={() => setSearchText('')}
-                  style={styles.clearButton}
-                >
-                  <Ionicons name="close" size={16} color="#666" />
-                </TouchableOpacity>
-              ) : null}
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.bottomContainer}>
-          <TouchableOpacity 
-            style={styles.confirmButton}
-            onPress={handleConfirm}
+      <FlatList
+        data={suggestions}
+        keyExtractor={(item) => item.place_id}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.suggestionItem}
+            onPress={() => handleSuggestionSelect(item.place_id, item.description)}
           >
-            <Text style={styles.confirmButtonText}>Confirm</Text>
+            <Text style={styles.suggestionText}>{item.description}</Text>
           </TouchableOpacity>
-        </View>
+        )}
+      />
+
+      <MapView style={styles.map} region={region} onRegionChangeComplete={setRegion}>
+        {vendorCircle && (
+          <Circle
+            center={{
+              latitude: vendorCircle.latitude,
+              longitude: vendorCircle.longitude,
+            }}
+            radius={vendorCircle.deliveryRadiusInMiles * 1609.34}
+            strokeColor="rgba(0,122,255,0.5)"
+            fillColor="rgba(0,122,255,0.1)"
+          />
+        )}
+      </MapView>
+
+      <View style={styles.pinContainer} pointerEvents="none">
+        <Image source={require('@/assets/mobile_images/icons/pin.png')} style={styles.pin} />
       </View>
-    </SafeAreaWrapper>
+
+      <TouchableOpacity style={styles.locateBtn} onPress={goToCurrentLocation}>
+        <Image
+          source={require('@/assets/mobile_images/icons/location_icon.png')}
+          style={{ width: 24, height: 24 }}
+        />
+      </TouchableOpacity>
+
+      {notServiceable && (
+        <View style={styles.errorBox}>
+          <Text style={styles.errorText}>We are not serviceable at this location. Please select a different location.</Text>
+        </View>
+      )}
+
+      <View style={styles.footer}>
+        <Text style={styles.addressMain}>{address}</Text>
+        <Text style={styles.addressCity}>{city}</Text>
+        <TouchableOpacity
+          style={[styles.confirmButton, notServiceable && styles.disabled]}
+          onPress={handleConfirm}
+          disabled={checking || notServiceable}
+        >
+          {checking ? <ActivityIndicator color="#fff" /> : <Text style={styles.confirmText}>Confirm Location</Text>}
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  contentContainer: {
-    flex: 1,
-    position: 'relative',
-  },
-  map: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1,
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 12,
-  },
-  backButton: {
-    padding: 8,
-    backgroundColor: '#fff',
-    borderRadius: 100,
-  },
-  title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    flex: 1,
-    marginLeft: 8,
-  },
-  searchContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-  },
-  searchInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 32,
-    paddingHorizontal: 12,
-    height: 44,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  searchIcon: {
-    marginRight: 8,
+    marginTop: 10,
+    marginBottom: 6,
+    textAlign: 'center',
+    color: '#000',
   },
   searchInput: {
-    flex: 1,
+    marginHorizontal: 16,
+    height: 44,
+    backgroundColor: '#f2f2f2',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  suggestionItem: {
+    backgroundColor: '#fff',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+  },
+  suggestionText: {
     fontSize: 14,
     color: '#333',
-    height: '100%',
-    padding: 0,
   },
-  clearButton: {
-    padding: 4,
-  },
-  bottomContainer: {
+  map: { flex: 1 },
+  pinContainer: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    top: '48%',
+    left: '50%',
+    marginLeft: -24,
+    marginTop: -48,
+    zIndex: 10,
+  },
+  pin: { width: 48, height: 48 },
+  locateBtn: {
+    position: 'absolute',
+    right: 20,
+    bottom: 170,
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 24,
+    elevation: 4,
+    zIndex: 20,
+  },
+  errorBox: {
+    backgroundColor: '#fdecea',
+    padding: 10,
+    margin: 10,
+    borderRadius: 8,
+  },
+  errorText: {
+    color: '#d32f2f',
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  footer: {
+    backgroundColor: '#fff',
     padding: 16,
-    paddingBottom: 24,
-    zIndex: 1,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    elevation: 6,
+  },
+  addressMain: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#000',
+    textAlign: 'center',
+  },
+  addressCity: {
+    fontSize: 13,
+    color: '#777',
+    textAlign: 'center',
+    marginBottom: 14,
   },
   confirmButton: {
-    backgroundColor: '#FF5722',
-    borderRadius: 32,
-    height: 52,
+    backgroundColor: '#FF6D00',
+    paddingVertical: 14,
+    borderRadius: 10,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  confirmButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  confirmText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  disabled: { opacity: 0.5 },
 });
 
-export default MapScreen; 
+export default MapScreen;

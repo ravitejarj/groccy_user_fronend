@@ -14,7 +14,7 @@ const Signup = () => {
 
   const handleSubmit = () => {
     if (firstName && lastName && email) {
-      router.push({ pathname: '/signup-step2', params: { firstName, lastName, email } });
+      router.push({ pathname: '/SignupStep_2', params: { firstName, lastName, email } });
     }
   };
 
@@ -63,7 +63,7 @@ const Signup = () => {
       {/* Add your social login buttons here if needed */}
       <View style={styles.footer}>
         <Text style={{ color: '#666' }}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => router.push('/login')}>
+        <TouchableOpacity onPress={() => router.push('/Login')}>
           <Text style={styles.link}>Sign in</Text>
         </TouchableOpacity>
       </View>

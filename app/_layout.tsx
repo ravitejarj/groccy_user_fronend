@@ -2,9 +2,9 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import 'react-native-reanimated';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -27,16 +27,16 @@ export default function RootLayout() {
             {/* Authentication & Onboarding */}
             <Stack.Screen name="index" />
             <Stack.Screen name="onboarding" />
-            <Stack.Screen name="login" />
-            <Stack.Screen name="signup" />
-            <Stack.Screen name="signup-step2" />
-            <Stack.Screen name="signup-verify" />
+            <Stack.Screen name="Login" />
+            <Stack.Screen name="SignupStep_1" />
+            <Stack.Screen name="SignupStep_2" />
+            <Stack.Screen name="SignupStep_3" />
             <Stack.Screen name="forgot-password" />
             <Stack.Screen name="verify-otp" />
             <Stack.Screen name="set-new-password" />
 
             {/* Location */}
-            <Stack.Screen name="set-location" />
+            <Stack.Screen name="SetLocation" />
             <Stack.Screen name="map" />
             <Stack.Screen name="address-update" />
 

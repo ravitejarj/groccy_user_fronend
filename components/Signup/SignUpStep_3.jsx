@@ -1,6 +1,6 @@
 import AuthBackground from '@/components/Common/AuthBackground';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { verifyOtp } from '../../services/auth';
 import { ErrorText, FormInput } from './FromElements';
@@ -20,7 +20,7 @@ const SignUpVerify = () => {
     setLoading(true);
     try {
       await verifyOtp({ phone: params.phone, otp });
-      router.replace('/set-location');
+      router.replace('/SetLocation');
     } catch (err) {
       setError(err?.response?.data?.message || "Invalid OTP. Please try again.");
     }

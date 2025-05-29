@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Modal } from 'react-native';
+import SafeAreaWrapper from '@/components/Common/SafeAreaWrapper';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import SafeAreaWrapper from '@/components/Common/SafeAreaWrapper';
+import React, { useState } from 'react';
+import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -72,7 +72,7 @@ export default function ProfileScreen() {
               <TouchableOpacity onPress={() => setLogoutVisible(false)}>
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.yesBtn} onPress={() => { setLogoutVisible(false); router.replace('/login'); }}>
+              <TouchableOpacity style={styles.yesBtn} onPress={() => { setLogoutVisible(false); router.replace('Login'); }}>
                 <Text style={styles.yesText}>Yes</Text>
               </TouchableOpacity>
             </View>

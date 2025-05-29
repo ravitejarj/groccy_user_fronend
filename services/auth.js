@@ -36,7 +36,7 @@ export const verifyOtp = async ({ phone, otp }) => {
 
 export const loginUser = async ({ email, password }) => {
   try {
-    const res = await axios.post(`${API_URL}/login`, {
+    const res = await axios.post(`${API_URL}/Login`, {
       email,
       password,
     });

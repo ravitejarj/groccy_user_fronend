@@ -109,13 +109,13 @@ const Login = () => {
               secureTextEntry={!showPassword}
               autoCapitalize="none"
             />
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.showPasswordButton}
               onPress={() => setShowPassword(!showPassword)}
             >
-              <Ionicons 
-                name={showPassword ? "eye" : "eye-off"} 
-                size={24} 
+              <Ionicons
+                name={showPassword ? "eye" : "eye-off"}
+                size={24}
                 color="#666"
               />
             </TouchableOpacity>
@@ -151,7 +151,7 @@ const Login = () => {
           </TouchableOpacity>
           <View style={styles.signupContainer}>
             <Text style={styles.signupText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => router.push('/signup')}>
+            <TouchableOpacity onPress={() => router.push('/SignupStep_1')}>
               <Text style={styles.signupLink}>Sign up</Text>
             </TouchableOpacity>
           </View>

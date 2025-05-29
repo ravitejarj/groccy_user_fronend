@@ -1,20 +1,16 @@
+import AuthBackground from '@/components/Common/AuthBackground';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
+  Image,
+  Modal,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Modal,
-  Image,
+  View
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import AuthBackground from '@/components/Common/AuthBackground';
 
 const SetNewPassword = () => {
   const [password, setPassword] = useState('');
@@ -119,7 +115,7 @@ const SetNewPassword = () => {
                 }}
                 onPress={() => {
                   setShowSuccess(false);
-                  router.push('/login');
+                  router.push('/Login');
                 }}
               >
                 <Text style={{ color: '#FFF', fontSize: 18, fontWeight: '600' }}>Password Updated</Text>
