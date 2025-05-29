@@ -15,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import MapView, { Circle } from 'react-native-maps';
-import { getNearbyVendors } from './vendorsAPI';
+import { getNearbyVendors } from './VendorsAPI';
 
 const MapScreen = () => {
   const router = useRouter();
@@ -70,7 +70,7 @@ const MapScreen = () => {
       setVendorCircle(vendors[0]);
 
       router.push({
-        pathname: '/address-update',
+        pathname: '/AddressForm',
         params: {
           lat: region.latitude.toString(),
           lng: region.longitude.toString(),
@@ -133,18 +133,20 @@ const MapScreen = () => {
         }}
       />
 
-      <FlatList
-        data={suggestions}
-        keyExtractor={(item) => item.place_id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.suggestionItem}
-            onPress={() => handleSuggestionSelect(item.place_id, item.description)}
-          >
-            <Text style={styles.suggestionText}>{item.description}</Text>
-          </TouchableOpacity>
-        )}
-      />
+      {suggestions.length > 0 && (
+        <FlatList
+          data={suggestions}
+          keyExtractor={(item) => item.place_id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.suggestionItem}
+              onPress={() => handleSuggestionSelect(item.place_id, item.description)}
+            >
+              <Text style={styles.suggestionText}>{item.description}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      )}
 
       <MapView style={styles.map} region={region} onRegionChangeComplete={setRegion}>
         {vendorCircle && (

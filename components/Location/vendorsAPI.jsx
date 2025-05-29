@@ -1,4 +1,4 @@
-// vendorsAPI.jsx (New)
+// VendorsAPI.jsx (New)
 export const getNearbyVendors = async (lat, lng) => {
   try {
     const res = await fetch(`http://192.168.1.150:5000/api/vendors/nearby?lat=${lat}&lng=${lng}`);
