@@ -1,7 +1,5 @@
-// SetLocation.jsx (Old Code Restored)
-import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,35 +11,28 @@ import {
   View,
 } from 'react-native';
 
+import { getAccurateCurrentLocation } from '@/helpers/GeoLocationHelper';
+
 const SetLocation = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [locationStatus, setLocationStatus] = useState(null);
-
-  useEffect(() => {
-    (async () => {
-      const { status } = await Location.getForegroundPermissionsAsync();
-      setLocationStatus(status);
-    })();
-  }, []);
 
   const handlePermission = async () => {
     setLoading(true);
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    setLocationStatus(status);
-
-    if (status !== 'granted') {
-      Alert.alert(
-        'Location Access Denied',
-        'Please enable location to find stores near you.'
-      );
+    try {
+      const { latitude, longitude } = await getAccurateCurrentLocation();
+      router.push({
+        pathname: '/ConfirmLocationScreen',
+        params: {
+          lat: latitude.toString(),
+          lng: longitude.toString(),
+        },
+      });
+    } catch (err) {
+      Alert.alert('Location Error', err.message);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const location = await Location.getCurrentPositionAsync({});
-    router.push({ pathname: '/ConfirmLocationScreen', params: { lat: location.coords.latitude, lng: location.coords.longitude } });
-    setLoading(false);
   };
 
   return (

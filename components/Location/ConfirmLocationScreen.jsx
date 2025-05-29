@@ -35,6 +35,7 @@ const MapScreen = () => {
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [checking, setChecking] = useState(false);
+  const [fetchingLocation, setFetchingLocation] = useState(false);
   const [notServiceable, setNotServiceable] = useState(false);
   const [vendorCircle, setVendorCircle] = useState(null);
 
@@ -90,19 +91,22 @@ const MapScreen = () => {
   };
 
   const goToCurrentLocation = async () => {
+    setFetchingLocation(true);
     try {
       const { latitude, longitude } = await getAccurateCurrentLocation();
-
-      setRegion({
+      const newRegion = {
         latitude,
         longitude,
         latitudeDelta: 0.002,
         longitudeDelta: 0.002,
-      });
+      };
 
+      setRegion(newRegion);
       animateToLocation(mapRef, latitude, longitude);
     } catch (err) {
       Alert.alert('Location Error', err.message);
+    } finally {
+      setFetchingLocation(false);
     }
   };
 
@@ -178,10 +182,14 @@ const MapScreen = () => {
       </View>
 
       <TouchableOpacity style={styles.locateBtn} onPress={goToCurrentLocation}>
-        <Image
-          source={require('@/assets/mobile_images/icons/location_icon.png')}
-          style={{ width: 24, height: 24 }}
-        />
+        {fetchingLocation ? (
+          <ActivityIndicator />
+        ) : (
+          <Image
+            source={require('@/assets/mobile_images/icons/location_icon.png')}
+            style={{ width: 24, height: 24 }}
+          />
+        )}
       </TouchableOpacity>
 
       {notServiceable && (

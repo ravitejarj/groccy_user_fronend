@@ -24,10 +24,17 @@ const AddressForm = () => {
     instructions: '',
   });
 
+  const isValidZip = (zip) => /^\d{5}(-\d{4})?$/.test(zip); // US ZIP: 12345 or 12345-6789
+
   const onSubmit = () => {
     const { street, city, state, zipCode } = form;
     if (!street || !city || !state || !zipCode) {
       Alert.alert('Missing Info', 'Please fill all required fields.');
+      return;
+    }
+
+    if (!isValidZip(zipCode)) {
+      Alert.alert('Invalid ZIP', 'Please enter a valid 5-digit ZIP code.');
       return;
     }
 
