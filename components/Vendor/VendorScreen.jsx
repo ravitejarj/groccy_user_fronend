@@ -1,18 +1,17 @@
+import SafeAreaWrapper from '@/components/Common/SafeAreaWrapper';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
+  Dimensions,
+  FlatList,
+  Image,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  FlatList,
-  Dimensions,
-  Image,
+  View
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import SafeAreaWrapper from '@/components/Common/SafeAreaWrapper';
 
 const categories = [
   { id: 1, name: 'Vegetables', image: require('@/assets/mobile-images/Product Categories/Vegetables.png') },
@@ -117,7 +116,7 @@ const VendorScreen = () => {
       ]}
       onPress={() => setSelectedCategory(item.name)}
     >
-      <Image 
+      <Image
         source={item.image}
         style={[
           styles.categoryImage,
@@ -125,7 +124,7 @@ const VendorScreen = () => {
         ]}
         resizeMode="contain"
       />
-      <Text 
+      <Text
         style={[
           styles.categoryText,
           selectedCategory === item.name && styles.categoryTextActive

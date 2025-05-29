@@ -40,7 +40,7 @@ const SetLocation = () => {
     }
 
     const location = await Location.getCurrentPositionAsync({});
-    router.push({ pathname: '/MapScreen', params: { lat: location.coords.latitude, lng: location.coords.longitude } });
+    router.push({ pathname: '/ConfirmLocationScreen', params: { lat: location.coords.latitude, lng: location.coords.longitude } });
     setLoading(false);
   };
 

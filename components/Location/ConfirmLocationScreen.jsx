@@ -1,4 +1,5 @@
-import { getPlaceDetails, getPlaceSuggestions } from '@/services/maps';
+import { getPlaceDetails, getPlaceSuggestions } from '@/services/GooglePlacesService';
+import { getNearbyVendors } from '@/services/NearbyVendorsService';
 import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -15,7 +16,6 @@ import {
   View,
 } from 'react-native';
 import MapView, { Circle } from 'react-native-maps';
-import { getNearbyVendors } from './VendorsAPI';
 
 const MapScreen = () => {
   const router = useRouter();

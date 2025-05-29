@@ -37,7 +37,7 @@ export default function RootLayout() {
 
             {/* Location */}
             <Stack.Screen name="SetLocation" />
-            <Stack.Screen name="MapScreen" />
+            <Stack.Screen name="ConfirmLocationScreen" />
             <Stack.Screen name="AddressForm" />
 
             {/* Orders */}

@@ -76,13 +76,6 @@ const AddressForm = () => {
           onChange={(v) => setForm({ ...form, zipCode: v })}
         />
 
-        <CustomInput
-          label="Delivery Instructions (optional)"
-          placeholder="Leave at the front door"
-          value={form.instructions}
-          onChange={(v) => setForm({ ...form, instructions: v })}
-        />
-
         <TouchableOpacity style={styles.button} onPress={onSubmit}>
           <Text style={styles.btnText}>Save Address</Text>
         </TouchableOpacity>
