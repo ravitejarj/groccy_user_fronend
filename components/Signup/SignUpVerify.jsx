@@ -1,208 +1,93 @@
-import React, { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import AuthBackground from '@/components/Common/AuthBackground';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { verifyOtp } from '../../services/auth';
+import { ErrorText, FormInput } from './FromElements';
+import styles from './styles';
 
 const SignUpVerify = () => {
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const router = useRouter();
-  const inputRefs = useRef([]);
+  const params = useLocalSearchParams(); // expects phone
+  const [otp, setOtp] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendDisabled, setResendDisabled] = useState(false);
 
-  const handleOtpChange = (value, index) => {
-    if (value.length > 1) {
-      value = value[value.length - 1];
+  const handleVerify = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      await verifyOtp({ phone: params.phone, otp });
+      router.replace('/set-location');
+    } catch (err) {
+      setError(err?.response?.data?.message || "Invalid OTP. Please try again.");
     }
-    
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-
-    // Move to next input if value is entered
-    if (value !== '' && index < 5) {
-      inputRefs.current[index + 1].focus();
-    }
+    setLoading(false);
   };
 
-  const handleKeyPress = (e, index) => {
-    // Move to previous input on backspace if current input is empty
-    if (e.nativeEvent.key === 'Backspace' && index > 0 && otp[index] === '') {
-      inputRefs.current[index - 1].focus();
+  const handleResendOtp = async () => {
+    setResending(true);
+    setResendDisabled(true);
+
+    // 🔁 Replace this with real resend API later
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // simulate API delay
+      // await resendOtp({ phone: params.phone });
+    } catch (err) {
+      setError("Failed to resend OTP. Try again.");
     }
-  };
 
-  const handleVerify = () => {
-    // Here you would typically verify the OTP with your backend
-    // For now, we'll just navigate to login
-    router.replace('/login');
-  };
-
-  const handleResendCode = () => {
-    // Handle resend code logic here
+    setResending(false);
+    setTimeout(() => setResendDisabled(false), 15000); // 15 seconds cooldown
   };
 
   return (
     <AuthBackground showBack={true} onBack={() => router.back()}>
-      <View style={{ alignItems: 'center', marginBottom: 16 }}>
-        <Ionicons name="cart" size={40} color="#FF5722" style={{ marginBottom: 8 }} />
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ color: '#222', fontSize: 20, fontWeight: 'bold', marginBottom: 8 }}>
+          Verify your account
+        </Text>
+        <Text style={{ color: '#888', fontSize: 14, marginBottom: 18 }}>
+          Enter the OTP sent to your phone to complete signup.
+        </Text>
+        <FormInput
+          label="OTP"
+          value={otp}
+          onChangeText={setOtp}
+          placeholder="Enter OTP"
+          keyboardType="number-pad"
+          maxLength={6}
+          textAlign="center"
+        />
       </View>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 12, color: '#222' }}>
-        Verify Your Account
-      </Text>
-      <Text style={{ fontSize: 15, color: '#666', textAlign: 'center', marginBottom: 32 }}>
-        Enter the 6-digit code we sent you to quickly verify your mobile.
-      </Text>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 32, paddingHorizontal: 10 }}>
-        {otp.map((digit, index) => (
-          <TextInput
-            key={index}
-            ref={ref => inputRefs.current[index] = ref}
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: '#E0E0E0',
-              backgroundColor: '#FFF',
-              fontSize: 20,
-              textAlign: 'center',
-              color: '#333',
-              marginHorizontal: 3,
-              left: -20,
-            }}
-            value={digit}
-            onChangeText={(value) => handleOtpChange(value, index)}
-            onKeyPress={(e) => handleKeyPress(e, index)}
-            keyboardType="numeric"
-            maxLength={1}
-            selectTextOnFocus
-          />
-        ))}
-      </View>
+
       <TouchableOpacity
-        style={{
-          backgroundColor: '#FF5722',
-          borderRadius: 32,
-          height: 50,
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginBottom: 20,
-        }}
+        style={styles.button}
         onPress={handleVerify}
-        disabled={!otp.every(digit => digit !== '')}
+        disabled={!otp || loading}
       >
-        <Text style={{ color: '#FFF', fontSize: 18, fontWeight: '600' }}>Verify</Text>
+        <Text style={styles.buttonText}>Verify</Text>
       </TouchableOpacity>
-      <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 0 }}>
-        <Text style={{ color: '#666' }}>Did not receive OTP? </Text>
-        <TouchableOpacity onPress={handleResendCode}>
-          <Text style={{ color: '#FF5722', fontWeight: 'bold' }}>Resend code</Text>
-        </TouchableOpacity>
-      </View>
+
+      <ErrorText error={error} />
+
+      <TouchableOpacity
+        onPress={handleResendOtp}
+        disabled={resending || resendDisabled}
+        style={{ marginTop: 14 }}
+      >
+        <Text style={{
+          textAlign: 'center',
+          color: resendDisabled ? '#aaa' : '#FF5722',
+          fontWeight: 'bold'
+        }}>
+          {resending ? 'Resending...' : 'Resend OTP'}
+        </Text>
+      </TouchableOpacity>
     </AuthBackground>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFF',
-  },
-  keyboardAvoidView: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    padding: 24,
-  },
-  backButton: {
-    marginBottom: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  logoContainer: {
-    alignItems: 'center',
-  },
-  logo: {
-    fontSize: 32,
-    color: '#FF5722',
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  cartIconWrapper: {
-    marginTop: 8,
-  },
-  title: {
-    fontSize: 24,
-    color: '#333',
-    fontWeight: '600',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 32,
-    paddingHorizontal: 20,
-  },
-  otpContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 32,
-    paddingHorizontal: 20,
-  },
-  otpInput: {
-    width: 45,
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    fontSize: 20,
-    textAlign: 'center',
-    color: '#333',
-  },
-  verifyButton: {
-    backgroundColor: '#FF5722',
-    borderRadius: 8,
-    padding: 14,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  verifyButtonDisabled: {
-    backgroundColor: '#FFE0D6',
-  },
-  verifyButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  resendContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 24,
-  },
-  resendText: {
-    color: '#666',
-    fontSize: 14,
-  },
-  resendLink: {
-    color: '#FF5722',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
-
-export default SignUpVerify; 
+export default SignUpVerify;

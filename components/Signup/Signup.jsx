@@ -1,97 +1,74 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
+import AuthBackground from '@/components/Common/AuthBackground';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AuthBackground from '@/components/Common/AuthBackground';
+import React, { useState } from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { FormInput } from './FromElements';
+import styles from './styles';
 
 const Signup = () => {
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const router = useRouter();
 
   const handleSubmit = () => {
-    if (fullName && email) {
-      router.push('/signup-step2');
+    if (firstName && lastName && email) {
+      router.push({ pathname: '/signup-step2', params: { firstName, lastName, email } });
     }
   };
 
   return (
     <AuthBackground showBack={true} onBack={() => router.back()}>
-      <View style={{ alignItems: 'center', marginBottom: 16 }}>
+      <View style={styles.iconHeader}>
         <Ionicons name="cart" size={40} color="#FF5722" style={{ marginBottom: 8 }} />
-        <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 24, color: '#222' }}>
-          Let's Get You Started
-        </Text>
+        <Text style={styles.title}>Let's Get You Started</Text>
       </View>
       <View style={{ marginBottom: 16 }}>
-        <Text style={{ color: '#888', fontSize: 14, marginBottom: 6 }}>Full Name</Text>
-        <TextInput
-          style={{
-            backgroundColor: '#F5F5F5',
-            borderRadius: 10,
-            paddingHorizontal: 15,
-            height: 48,
-            fontSize: 16,
-            marginBottom: 16,
-          }}
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder="Full Name"
-          placeholderTextColor="#999"
+        <FormInput
+          label="First Name"
+          value={firstName}
+          onChangeText={setFirstName}
+          placeholder="First Name"
+          autoCapitalize="words"
         />
-        <Text style={{ color: '#888', fontSize: 14, marginBottom: 6 }}>Email</Text>
-        <TextInput
-          style={{
-            backgroundColor: '#F5F5F5',
-            borderRadius: 10,
-            paddingHorizontal: 15,
-            height: 48,
-            fontSize: 16,
-            marginBottom: 16,
-          }}
+        <FormInput
+          label="Last Name"
+          value={lastName}
+          onChangeText={setLastName}
+          placeholder="Last Name"
+          autoCapitalize="words"
+        />
+        <FormInput
+          label="Email"
           value={email}
           onChangeText={setEmail}
           placeholder="example@gmail.com"
-          placeholderTextColor="#999"
           keyboardType="email-address"
           autoCapitalize="none"
         />
       </View>
       <TouchableOpacity
-        style={{
-          backgroundColor: '#FF5722',
-          borderRadius: 32,
-          height: 50,
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginBottom: 20,
-        }}
+        style={styles.button}
         onPress={handleSubmit}
-        disabled={!fullName || !email}
+        disabled={!firstName || !lastName || !email}
       >
-        <Text style={{ color: '#FFF', fontSize: 18, fontWeight: '600' }}>Continue</Text>
+        <Text style={styles.buttonText}>Continue</Text>
       </TouchableOpacity>
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 16 }}>
-        <View style={{ flex: 1, height: 1, backgroundColor: '#eee' }} />
-        <Text style={{ marginHorizontal: 8, color: '#888' }}>or login with</Text>
-        <View style={{ flex: 1, height: 1, backgroundColor: '#eee' }} />
+      <View style={styles.divider}>
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>or login with</Text>
+        <View style={styles.dividerLine} />
       </View>
       {/* Add your social login buttons here if needed */}
-      <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
+      <View style={styles.footer}>
         <Text style={{ color: '#666' }}>Already have an account? </Text>
         <TouchableOpacity onPress={() => router.push('/login')}>
-          <Text style={{ color: '#FF5722', fontWeight: 'bold' }}>Sign in</Text>
+          <Text style={styles.link}>Sign in</Text>
         </TouchableOpacity>
       </View>
     </AuthBackground>
   );
 };
 
-export default Signup; 
+export default Signup;
