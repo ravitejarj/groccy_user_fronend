@@ -1,8 +1,5 @@
-
+import { GOOGLE_MAPS_API_KEY } from '@env';
 import axios from 'axios';
-
-
-const GOOGLE_MAPS_API_KEY = "AIzaSyB-avYjudSjUQcRiwwMWRMGB_FS3-0syyQ";
 
 // Get address suggestions from Google Places
 export const getPlaceSuggestions = async (input) => {
