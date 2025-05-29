@@ -1,29 +1,80 @@
-import React, { useState } from 'react';
+import AuthBackground from '@/components/Common/AuthBackground';
+import { loginUser } from '@/services/auth';
+import { Ionicons } from '@expo/vector-icons';
+import * as Google from 'expo-auth-session/providers/google';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
+  View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import AuthBackground from '@/components/Common/AuthBackground';
+
+// ✅ Email validation function
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = () => {
-    // Handle login logic here when needed
-    router.push('/set-location');
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId: 'your-client-id.apps.googleusercontent.com',
+    iosClientId: 'your-client-id.apps.googleusercontent.com',
+    androidClientId: 'your-client-id.apps.googleusercontent.com',
+    webClientId: 'your-client-id.apps.googleusercontent.com',
+  });
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { authentication } = response;
+      fetch('http://localhost:5000/auth/google/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: authentication.accessToken }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            router.push('/(tabs)');
+          } else {
+            setError(data.message || 'Unknown error');
+          }
+        })
+        .catch(err => {
+          setError(err.message || 'An error occurred');
+        });
+    }
+  }, [response]);
+
+  const handleSubmit = async () => {
+    setError('');
+
+    // 🛡️ Input validation
+    if (!email || !isValidEmail(email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    if (!password || password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await loginUser({ email, password });
+      router.push('/(tabs)');
+    } catch (err) {
+      setError(err.message || "Login failed");
+    }
+    setLoading(false);
   };
 
   return (
@@ -69,34 +120,34 @@ const Login = () => {
               />
             </TouchableOpacity>
           </View>
-          <View style={styles.rowBetween}>
-            <TouchableOpacity style={styles.rememberMeContainer} onPress={() => setRememberMe(!rememberMe)}>
-              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                {rememberMe && <Ionicons name="checkmark" size={14} color="#fff" />}
-              </View>
-              <Text style={styles.rememberMeText}>Remember me</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.forgotPassword} onPress={() => router.push('/forgot-password')}>
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity style={styles.loginButton} onPress={handleSubmit}>
-            <Text style={styles.loginButtonText}>Log in</Text>
+          {error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : null}
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={handleSubmit}
+            activeOpacity={0.8}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.loginButtonText}>Login</Text>
+            )}
           </TouchableOpacity>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 16 }}>
+          <View style={styles.rowBetween}>
             <View style={{ flex: 1, height: 1, backgroundColor: '#eee' }} />
             <Text style={{ marginHorizontal: 8, color: '#888' }}>or login with</Text>
             <View style={{ flex: 1, height: 1, backgroundColor: '#eee' }} />
           </View>
-          <TouchableOpacity style={styles.googleButton} onPress={() => {}} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.googleButton}
+            onPress={() => promptAsync()}
+            activeOpacity={0.8}
+            disabled={!request}
+          >
             <Ionicons name="logo-google" size={22} color="#EA4335" style={{ marginRight: 8 }} />
             <Text style={styles.googleButtonText}>Google</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.loginButton, { backgroundColor: '#FFF', borderWidth: 1, borderColor: '#FF5722', marginBottom: 10 }]}
-            onPress={() => router.push('/(tabs)')}
-          >
-            <Text style={[styles.loginButtonText, { color: '#FF5722' }]}>Continue without login</Text>
           </TouchableOpacity>
           <View style={styles.signupContainer}>
             <Text style={styles.signupText}>Don't have an account? </Text>
@@ -151,47 +202,16 @@ const styles = StyleSheet.create({
   rowBetween: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  rememberMeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: '#FF5722',
-    marginRight: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-  },
-  checkboxChecked: {
-    backgroundColor: '#FF5722',
-    borderColor: '#FF5722',
-  },
-  rememberMeText: {
-    fontSize: 13,
-    color: '#333',
-  },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: 0,
-  },
-  forgotPasswordText: {
-    color: '#FF5722',
-    fontSize: 14,
+    marginVertical: 18,
   },
   loginButton: {
     backgroundColor: '#FF5722',
-    borderRadius: 10,
-    height: 50,
-    justifyContent: 'center',
+    borderRadius: 24,
+    paddingVertical: 12,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 18,
+    marginTop: 4,
+    width: '100%',
   },
   loginButtonText: {
     color: '#FFF',
@@ -228,6 +248,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
+  errorText: {
+    color: '#e53935',
+    backgroundColor: '#fff0f0',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 7,
+    marginBottom: 6,
+    marginTop: -5,
+    fontSize: 15,
+    alignSelf: 'flex-start',
+  },
 });
 
-export default Login; 
+export default Login;
