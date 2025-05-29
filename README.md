@@ -13,4 +13,5 @@ npx expo start --tunnel
 ```bash
 npx expo install expo-auth-session
 npm install axios
+npm install react-native-dotenv
 ```
